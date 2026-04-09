@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phoenix Vault | Secure Storage</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        /* ==========================================================================
+           CSS VARIABLES & RESET
+           ========================================================================== */
+        :root {
+            --bg-base: #050508;
+            --bg-surface: rgba(20, 22, 28, 0.65);
+            --bg-surface-hover: rgba(30, 33, 42, 0.85);
+            --accent-primary: #00e5ff;
+            --accent-glow: rgba(0, 229, 255, 0.3);
+            --accent-danger: #ff3366;
+            --text-main: #f0f4f8;
+            --text-muted: #8b949e;
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(0, 229, 255, 0.4);
+            --shadow-depth: 0 20px 40px rgba(0, 0, 0, 0.6);
+            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 229, 255, 0.04) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        input, textarea, .selectable { user-select: text; }
+
+        /* ==========================================================================
+           TYPOGRAPHY & UTILITIES
+           ========================================================================== */
+        h1, h2, h3 { font-family: 'Orbitron', sans-serif; letter-spacing: 1px; }
+        
+        .hidden { display: none !important; }
+        
+        .glass-panel {
+            background: var(--bg-surface);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            box-shadow: var(--shadow-depth);
+        }
+
+        /* ==========================================================================
+           BUTTONS & INPUTS
+           ========================================================================== */
+        button {
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: var(--text-main);
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), transparent);
+            border: 1px solid var(--accent-primary);
+            color: var(--accent-primary);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px transparent;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-primary);
+            color: #000;
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            border-color: var(--text-muted);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            background: transparent;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid transparent;
+        }
+
+        .btn-icon:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--border-glass);
+            transform: scale(1.05);
+        }
+
+        .btn-icon.danger:hover {
+            color: var(--accent-danger);
+            border-color: rgba(255, 51, 102, 0.3);
+            background: rgba(255, 51, 102, 0.1);
+        }
+
+        input[type="text"], input[type="password"], textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            padding: 14px 16px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition-smooth);
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        span.ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple-anim 0.6s linear;
+            background-color: rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+        }
+        @keyframes ripple-anim {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        /* ==========================================================================
+           LAYOUTS & VIEWS
+           ========================================================================== */
+        #app-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .view-section {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            animation: viewFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes viewFadeIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* --- LOGIN SCREEN --- */
+        #login-view {
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-box::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent);
+            transform: skewX(-20deg); animation: shine 6s infinite; pointer-events: none;
+        }
+        @keyframes shine { 20% { left: 200%; } 100% { left: 200%; } }
+
+        .vault-logo {
+            font-size: 3rem; margin-bottom: 10px; color: var(--accent-primary);
+            filter: drop-shadow(0 0 10px var(--accent-glow));
+        }
+
+        .login-title { font-size: 1.5rem; margin-bottom: 5px; }
+        .login-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 30px; }
+        
+        .login-status {
+            font-size: 0.85rem; min-height: 20px; margin-bottom: 15px;
+            font-weight: 500; color: var(--accent-danger);
+        }
+
+        .pass-input-container { margin-bottom: 24px; }
+        #pass-input { text-align: center; font-size: 1.5rem; letter-spacing: 5px; font-family: 'Orbitron'; }
+        
+        #btn-unlock { width: 100%; }
+
+        /* --- DASHBOARD HEADER --- */
+        .dash-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            position: sticky;
+            top: 20px;
+            z-index: 10;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-title { font-size: 1.25rem; }
+
+        .search-container { margin-bottom: 30px; position: relative; }
+        .search-icon {
+            position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); pointer-events: none;
+        }
+        #search-input { padding-left: 45px; border-radius: 30px; background: rgba(0,0,0,0.3); }
+
+        /* --- 3D GRID & CARDS --- */
+        .dashboard-grid {
+            display: grid;
+            gap: 24px;
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (min-width: 768px) { .dashboard-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1024px) { .dashboard-grid { grid-template-columns: repeat(4, 1fr); } }
+
+        .grid-card {
+            perspective: 1000px;
+            height: 160px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            width: 100%; height: 100%;
+            background: linear-gradient(145deg, rgba(30, 32, 40, 0.8), rgba(15, 16, 20, 0.9));
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            transform-style: preserve-3d;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        box-shadow 0.4s ease, border-color 0.4s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+            position: relative;
+        }
+
+        .grid-card:hover .card-inner {
+            transform: translateY(-8px) rotateX(4deg) rotateY(-4deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 
+                        0 0 20px rgba(0, 229, 255, 0.1),
+                        inset 0 1px 0 rgba(255,255,255,0.1);
+            border-color: var(--border-glow);
+        }
+
+        .card-content {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transform: translateZ(30px);
+        }
+        
+        .cat-card .card-content h3 {
+            font-size: 1.1rem;
+            word-break: break-word;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+        }
+
+        .note-card { height: auto; min-height: 180px; cursor: default; }
+        .note-card .card-content {
+            align-items: flex-start; justify-content: flex-start; text-align: left;
+            margin-bottom: 40px;
+        }
+        .note-card .card-content p {
+            font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; color: #d0d6e0;
+            word-break: break-word; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
+        }
+
+        .note-card:hover .card-inner { transform: translateY(-5px); }
+        .note-card:hover .card-content p { display: block; overflow: visible; }
+
+        .card-actions {
+            position: absolute; bottom: 15px; right: 15px;
+            display: flex; gap: 8px;
+            opacity: 0; transform: translateZ(40px) translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .grid-card:hover .card-actions { opacity: 1; transform: translateZ(40px) translateY(0); }
+
+        /* --- EMPTY & LOADING STATES --- */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center; padding: 60px 20px;
+            color: var(--text-muted);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .empty-icon { font-size: 3rem; margin-bottom: 15px; opacity: 0.5; }
+        
+        .loader {
+            width: 40px; height: 40px;
+            border: 3px solid rgba(0, 229, 255, 0.1);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 40px auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- CUSTOM MODAL --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+        .modal-card {
+            width: 100%; max-width: 500px;
+            padding: 30px;
+            transform: translateY(30px) scale(0.95);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .modal-overlay.active .modal-card { transform: translateY(0) scale(1); }
+
+        .modal-header { margin-bottom: 20px; font-size: 1.25rem; }
+        .modal-body { margin-bottom: 25px; }
+        .modal-body textarea { min-height: 150px; resize: vertical; }
+        
+        .modal-footer { display: flex; justify-content: flex-end; gap: 15px; }
+        .btn-text { background: transparent; color: var(--text-muted); font-weight: 500; padding: 10px 20px; }
+        .btn-text:hover { color: #fff; }
+
+        svg { width: 18px; height: 18px; fill: currentColor; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. LOGIN SCREEN -->
+    <div id="login-view" class="view-section">
+        <div class="glass-panel login-box">
+            <div class="vault-logo">
+                <svg viewBox="0 0 24 24" style="width: 48px; height: 48px;"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+            </div>
+            <h1 class="login-title">PHOENIX VAULT</h1>
+            <p class="login-subtitle">SECURE ENCRYPTED STORAGE</p>
+            
+            <div id="login-status" class="login-status"></div>
+            
+            <div class="pass-input-container">
+                <input type="password" id="pass-input" placeholder="••••" maxlength="4" autocomplete="off">
+            </div>
+            <button id="btn-unlock" class="btn-primary" data-ripple>INITIALIZE DECRYPTION</button>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div id="app-container" class="hidden">
+        
+        <!-- 2. CATEGORIES GRID VIEW -->
+        <div id="categories-view" class="view-section">
+            <header class="glass-panel dash-header">
+                <div class="header-left">
+                    <svg viewBox="0 0 24 24" style="width:24px;height:24px;color:var(--accent-primary);"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+                    <h2 class="header-title">COLLECTIONS</h2>
+                </div>
+                <button id="btn-add-cat" class="btn-primary" data-ripple>+ NEW</button>
+            </header>
+            <div id="categories-grid" class="dashboard-grid">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- 3. NOTES GRID VIEW -->
+        <div id="notes-view" class="view-section hidden">
+            <header class="glass-panel dash-header">
+                <div class="header-left">
+                    <button id="btn-back" class="btn-icon" title="Return">
+                        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                    </button>
+                    <h2 id="active-cat-title" class="header-title">Category Name</h2>
+                </div>
+                <button id="btn-add-note" class="btn-primary" data-ripple>+ ADD INTEL</button>
+            </header>
+            
+            <div class="search-container">
+                <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <input type="text" id="search-input" placeholder="Search operational intelligence..." autocomplete="off">
+            </div>
+
+            <div id="notes-grid" class="dashboard-grid">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 4. UNIVERSAL MODAL -->
+    <div id="app-modal" class="modal-overlay">
+        <div class="glass-panel modal-card">
+            <h3 id="modal-title" class="modal-header">Title</h3>
+            <div class="modal-body">
+                <input type="text" id="modal-input-text" class="hidden" placeholder="Enter name...">
+                <textarea id="modal-input-area" class="hidden" placeholder="Enter details..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-btn-cancel" class="btn-text" data-ripple>CANCEL</button>
+                <button id="modal-btn-save" class="btn-primary" data-ripple>SAVE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         JAVASCRIPT LOGIC (Firebase Config + App Logic Combined)
+         ========================================================================== -->
+    <script type="module">
+        // 1. IMPORT FIREBASE DIRECTLY FROM CDN 
+        // (This replaces the local file import so it works in Acode)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, query, where, onSnapshot } 
+        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // 2. YOUR FIREBASE CONFIGURATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyCJfw-FOR3um5CdFbYXh4m5niMLMDpu1tU",
+            authDomain: "evil-vault.firebaseapp.com",
+            projectId: "evil-vault",
+            storageBucket: "evil-vault.firebasestorage.app",
+            messagingSenderId: "765657171943",
+            appId: "1:765657171943:web:830baffa2431525c999f42"
+        };
+
+        // 3. INITIALIZE FIREBASE APP
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ----------------------------------------------------------------------
+        // STATE MANAGEMENT
+        // ----------------------------------------------------------------------
+        const AppState = {
+            activeCategoryId: null,
+            activeCategoryName: null,
+            loginAttempts: 0,
+            lockoutKey: 'phoenix_vault_lockout',
+            unsubs: { categories: null, notes: null }
+        };
+
+        // ----------------------------------------------------------------------
+        // DOM ELEMENTS
+        // ----------------------------------------------------------------------
+        const DOM = {
+            views: {
+                login: document.getElementById('login-view'),
+                app: document.getElementById('app-container'),
+                categories: document.getElementById('categories-view'),
+                notes: document.getElementById('notes-view')
+            },
+            auth: {
+                input: document.getElementById('pass-input'),
+                btn: document.getElementById('btn-unlock'),
+                status: document.getElementById('login-status')
+            },
+            grids: {
+                categories: document.getElementById('categories-grid'),
+                notes: document.getElementById('notes-grid')
+            },
+            notes: {
+                title: document.getElementById('active-cat-title'),
+                search: document.getElementById('search-input'),
+                btnBack: document.getElementById('btn-back')
+            },
+            modal: {
+                overlay: document.getElementById('app-modal'),
+                title: document.getElementById('modal-title'),
+                inputTxt: document.getElementById('modal-input-text'),
+                inputArea: document.getElementById('modal-input-area'),
+                btnSave: document.getElementById('modal-btn-save'),
+                btnCancel: document.getElementById('modal-btn-cancel')
+            }
+        };
+
+        // ----------------------------------------------------------------------
+        // UI HELPERS & ANIMATIONS
+        // ----------------------------------------------------------------------
+        // Ripple Effect
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-ripple]');
+            if (!btn) return;
+            const circle = document.createElement('span');
+            const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+            const radius = diameter / 2;
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${e.clientX - btn.getBoundingClientRect().left - radius}px`;
+            circle.style.top = `${e.clientY - btn.getBoundingClientRect().top - radius}px`;
+            circle.classList.add('ripple');
+            const existing = btn.querySelector('.ripple');
+            if (existing) existing.remove();
+            btn.appendChild(circle);
+        });
+
+        const showView = (viewName) => {
+            Object.values(DOM.views).forEach(v => v.classList.add('hidden'));
+            if (viewName === 'login') DOM.views.login.classList.remove('hidden');
+            else {
+                DOM.views.app.classList.remove('hidden');
+                if (viewName === 'categories') DOM.views.categories.classList.remove('hidden');
+                if (viewName === 'notes') DOM.views.notes.classList.remove('hidden');
+            }
+        };
+
+        // Modal Logic
+        let currentModalAction = null;
+
+        const openModal = (title, type, initialValue, onSave) => {
+            DOM.modal.title.innerText = title;
+            currentModalAction = onSave;
+            
+            DOM.modal.inputTxt.classList.add('hidden');
+            DOM.modal.inputArea.classList.add('hidden');
+
+            if (type === 'text') {
+                DOM.modal.inputTxt.classList.remove('hidden');
+                DOM.modal.inputTxt.value = initialValue;
+                setTimeout(() => DOM.modal.inputTxt.focus(), 100);
+            } else {
+                DOM.modal.inputArea.classList.remove('hidden');
+                DOM.modal.inputArea.value = initialValue;
+                setTimeout(() => DOM.modal.inputArea.focus(), 100);
+            }
+            
+            DOM.modal.overlay.classList.add('active');
+        };
+
+        const closeModal = () => {
+            DOM.modal.overlay.classList.remove('active');
+            currentModalAction = null;
+        };
+
+        DOM.modal.btnCancel.addEventListener('click', closeModal);
+        DOM.modal.btnSave.addEventListener('click', () => {
+            if (!currentModalAction) return;
+            const val = !DOM.modal.inputTxt.classList.contains('hidden') 
+                ? DOM.modal.inputTxt.value.trim() 
+                : DOM.modal.inputArea.value.trim();
+            if (val) {
+                currentModalAction(val);
+                closeModal();
+            }
+        });
+
+        // Icon SVGs
+        const icons = {
+            edit: `<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`,
+            trash: `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`
+        };
+
+        // ----------------------------------------------------------------------
+        // AUTHENTICATION LOGIC (Password is current time HHMM)
+        // ----------------------------------------------------------------------
+        const checkLockout = () => {
+            const lockUntil = localStorage.getItem(AppState.lockoutKey);
+            if (lockUntil && Date.now() < parseInt(lockUntil)) {
+                const mins = Math.ceil((parseInt(lockUntil) - Date.now()) / 60000);
+                DOM.auth.status.innerText = `SYSTEM LOCKED. RETRY IN ${mins} MIN(S).`;
+                DOM.auth.btn.disabled = true;
+                DOM.auth.input.disabled = true;
+                return true;
+            } else if (lockUntil) {
+                localStorage.removeItem(AppState.lockoutKey);
+                AppState.loginAttempts = 0;
+            }
+            DOM.auth.status.innerText = "";
+            DOM.auth.btn.disabled = false;
+            DOM.auth.input.disabled = false;
+            return false;
+        };
+
+        const handleLogin = () => {
+            if (checkLockout()) return;
+            
+            const pass = DOM.auth.input.value;
+            const now = new Date();
+            const correctPass = now.getHours().toString().padStart(2, '0') + now.getMinutes().toString().padStart(2, '0');
+
+            if (pass === correctPass) {
+                DOM.views.login.style.display = 'none';
+                showView('categories');
+                loadCategories();
+            } else {
+                AppState.loginAttempts++;
+                DOM.auth.input.value = "";
+                DOM.auth.status.innerText = `INVALID HEX. ATTEMPT ${AppState.loginAttempts}/3`;
+                
+                if (AppState.loginAttempts >= 3) {
+                    localStorage.setItem(AppState.lockoutKey, Date.now() + (30 * 60 * 1000));
+                    checkLockout();
+                }
+            }
+        };
+
+        DOM.auth.btn.addEventListener('click', handleLogin);
+        DOM.auth.input.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
+
+        setInterval(checkLockout, 60000);
+        checkLockout();
+
+        // ----------------------------------------------------------------------
+        // DATA LOGIC: CATEGORIES
+        // ----------------------------------------------------------------------
+        const renderCategories = (snapshot) => {
+            DOM.grids.categories.innerHTML = '';
+            if (snapshot.empty) {
+                DOM.grids.categories.innerHTML = `<div class="empty-state"><div class="empty-icon">📁</div><h3>No Collections Established</h3><p>Initialize a new collection to begin.</p></div>`;
+                return;
+            }
+            
+            snapshot.forEach(docSnap => {
+                const data = docSnap.data();
+                const card = document.createElement('div');
+                card.className = 'grid-card cat-card';
+                card.dataset.id = docSnap.id;
+                card.dataset.name = data.name;
+                
+                card.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-content">
+                            <h3>${escapeHTML(data.name)}</h3>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-icon action-edit-cat" title="Rename">${icons.edit}</button>
+                            <button class="btn-icon danger action-delete-cat" title="Purge">${icons.trash}</button>
+                        </div>
+                    </div>
+                `;
+                DOM.grids.categories.appendChild(card);
+            });
+        };
+
+        const loadCategories = () => {
+            DOM.grids.categories.innerHTML = '<div class="loader"></div>';
+            if (AppState.unsubs.categories) AppState.unsubs.categories();
+            
+            AppState.unsubs.categories = onSnapshot(collection(db, "categories"), renderCategories, (err) => {
+                console.error("Categories fetch error:", err);
+                DOM.grids.categories.innerHTML = `<div class="empty-state">Error loading collections. Check console.</div>`;
+            });
+        };
+
+        // ----------------------------------------------------------------------
+        // DATA LOGIC: NOTES
+        // ----------------------------------------------------------------------
+        const renderNotes = (snapshot) => {
+            DOM.grids.notes.innerHTML = '';
+            if (snapshot.empty) {
+                DOM.grids.notes.innerHTML = `<div class="empty-state"><div class="empty-icon">📄</div><h3>No Intel Found</h3><p>Add secure intel to this collection.</p></div>`;
+                return;
+            }
+
+            snapshot.forEach(docSnap => {
+                const data = docSnap.data();
+                const card = document.createElement('div');
+                card.className = 'grid-card note-card';
+                card.dataset.id = docSnap.id;
+                card.dataset.text = data.text;
+                
+                card.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-content">
+                            <p>${escapeHTML(data.text)}</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-icon action-edit-note" title="Edit Intel">${icons.edit}</button>
+                            <button class="btn-icon danger action-delete-note" title="Purge Intel">${icons.trash}</button>
+                        </div>
+                    </div>
+                `;
+                DOM.grids.notes.appendChild(card);
+            });
+        };
+
+        const loadNotes = (categoryId) => {
+            DOM.grids.notes.innerHTML = '<div class="loader"></div>';
+            DOM.notes.search.value = '';
+            
+            if (AppState.unsubs.notes) AppState.unsubs.notes();
+            
+            const q = query(collection(db, "notes"), where("category", "==", categoryId));
+            AppState.unsubs.notes = onSnapshot(q, renderNotes, (err) => {
+                console.error("Notes fetch error:", err);
+            });
+        };
+
+        // ----------------------------------------------------------------------
+        // EVENT DELEGATION
+        // ----------------------------------------------------------------------
+        document.addEventListener('click', async (e) => {
+            // --- GLOBAL BUTTONS ---
+            if (e.target.closest('#btn-add-cat')) {
+                openModal("INITIALIZE COLLECTION", "text", "", async (val) => {
+                    await addDoc(collection(db, "categories"), { name: val });
+                });
+                return;
+            }
+            if (e.target.closest('#btn-add-note')) {
+                openModal("ADD INTEL", "textarea", "", async (val) => {
+                    await addDoc(collection(db, "notes"), { text: val, category: AppState.activeCategoryId });
+                });
+                return;
+            }
+            if (e.target.closest('#btn-back')) {
+                showView('categories');
+                AppState.activeCategoryId = null;
+                return;
+            }
+
+            // --- CATEGORY CARD ACTIONS ---
+            const catCard = e.target.closest('.cat-card');
+            if (catCard) {
+                const id = catCard.dataset.id;
+                const name = catCard.dataset.name;
+
+                if (e.target.closest('.action-edit-cat')) {
+                    openModal("RENAME COLLECTION", "text", name, async (val) => {
+                        await updateDoc(doc(db, "categories", id), { name: val });
+                    });
+                    return;
+                }
+                if (e.target.closest('.action-delete-cat')) {
+                    if (confirm(`Purge collection '${name}' and all contained intel?`)) {
+                        await deleteDoc(doc(db, "categories", id));
+                    }
+                    return;
+                }
+                
+                AppState.activeCategoryId = id;
+                AppState.activeCategoryName = name;
+                DOM.notes.title.innerText = name;
+                showView('notes');
+                loadNotes(id);
+                return;
+            }
+
+            // --- NOTE CARD ACTIONS ---
+            const noteCard = e.target.closest('.note-card');
+            if (noteCard) {
+                const id = noteCard.dataset.id;
+                const text = noteCard.dataset.text;
+
+                if (e.target.closest('.action-edit-note')) {
+                    openModal("UPDATE INTEL", "textarea", text, async (val) => {
+                        await updateDoc(doc(db, "notes", id), { text: val });
+                    });
+                    return;
+                }
+                if (e.target.closest('.action-delete-note')) {
+                    if (confirm("Permanently purge this intel?")) {
+                        await deleteDoc(doc(db, "notes", id));
+                    }
+                    return;
+                }
+            }
+        });
+
+        // ----------------------------------------------------------------------
+        // SEARCH FUNCTIONALITY
+        // ----------------------------------------------------------------------
+        DOM.notes.search.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const cards = DOM.grids.notes.querySelectorAll('.note-card');
+            cards.forEach(card => {
+                const text = card.dataset.text.toLowerCase();
+                if (text.includes(term)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        });
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[tag] || tag));
+        }
+    </script>
+</body>
+</html>
+
+
+```
