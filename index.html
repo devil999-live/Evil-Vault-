@@ -1,4 +1,7 @@
-```html
+>
+
+
+```
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -101,7 +104,6 @@
             font-family: 'Inter', sans-serif; transition: var(--transition-smooth);
         }
         input:focus, textarea:focus { outline: none; border-color: var(--accent-secondary); box-shadow: 0 0 15px var(--accent-glow-blue); }
-
         /* ==========================================================================
            LAYOUTS & VIEWS
            ========================================================================== */
@@ -328,7 +330,7 @@
     </div>
 
     <!-- ==========================================================================
-         JAVASCRIPT LOGIC
+    JAVASCRIPT LOGIC
          ========================================================================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -365,327 +367,11 @@
         const DOM = {
             views: { login: document.getElementById('login-view'), app: document.getElementById('app-container'), cats: document.getElementById('categories-view'), notes: document.getElementById('notes-view'), fullNote: document.getElementById('full-note-view') },
             grids: { cats: document.getElementById('categories-grid'), catsTrash: document.getElementById('trashed-categories-grid'), notes: document.getElementById('notes-grid'), notesTrash: document.getElementById('trashed-notes-grid') },
-            dividers: { cats: document.getElementById('trash-divider-cats'), notes: document.getElementById('t            color: #fff; border-color: var(--accent-primary);
-            box-shadow: 0 0 10px var(--accent-glow);
-        }
-
-        input[type="text"], input[type="password"], textarea {
-            width: 100%; background: rgba(0, 0, 0, 0.6);
-            border: 1px solid var(--border-glass); color: var(--text-main);
-            padding: 14px 16px; border-radius: 8px; font-size: 1rem;
-            font-family: 'Inter', sans-serif; transition: var(--transition-smooth);
-        }
-
-        input:focus, textarea:focus {
-            outline: none; border-color: var(--accent-secondary); box-shadow: 0 0 15px var(--accent-glow-blue);
-        }
-
-        /* ==========================================================================
-           LAYOUTS & VIEWS
-           ========================================================================== */
-        #app-container {
-            width: 100%; max-width: 1400px; margin: 0 auto; padding: 24px;
-            flex-grow: 1; display: flex; flex-direction: column;
-        }
-
-        .view-section {
-            display: flex; flex-direction: column; flex-grow: 1;
-            animation: viewFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        @keyframes viewFadeIn {
-            from { opacity: 0; transform: translateY(20px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        /* --- LOGIN SCREEN --- */
-        #login-view { justify-content: center; align-items: center; height: 100vh; padding: 0; margin: 0; }
-        .login-box {
-            width: 100%; max-width: 400px; padding: 40px; text-align: center;
-            position: relative; overflow: hidden; border-color: var(--neon-red);
-            box-shadow: 0 0 30px rgba(255, 0, 60, 0.1);
-        }
-        .vault-logo { font-size: 3rem; margin-bottom: 10px; color: var(--accent-primary); }
-        .login-title { font-size: 2rem; margin-bottom: 5px; font-weight: 900; letter-spacing: 2px; }
-        .login-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 30px; letter-spacing: 3px;}
-        .login-status { font-size: 0.85rem; min-height: 20px; margin-bottom: 15px; font-weight: 500; color: var(--accent-primary); }
-        .pass-input-container { margin-bottom: 24px; }
-        #pass-input { text-align: center; font-size: 1.5rem; letter-spacing: 5px; font-family: 'Orbitron'; color: var(--neon-blue); }
-        #btn-unlock { width: 100%; }
-
-        /* --- DASHBOARD HEADER --- */
-        .dash-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 20px; margin-bottom: 30px; border-radius: 12px;
-            position: sticky; top: 20px; z-index: 10;
-            border-bottom: 2px solid var(--accent-primary);
-        }
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        .header-title { font-size: 1.25rem; color: #fff; text-shadow: 0 0 10px var(--neon-red); }
-
-        .search-container { margin-bottom: 30px; position: relative; }
-        .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--neon-blue); pointer-events: none; }
-        #search-input { padding-left: 45px; border-radius: 30px; border-color: rgba(0, 229, 255, 0.3); }
-
-        /* --- 3D GRID & CARDS --- */
-        .dashboard-grid {
-            display: grid; gap: 24px; grid-template-columns: repeat(2, 1fr);
-        }
-        @media (min-width: 768px) { .dashboard-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (min-width: 1024px) { .dashboard-grid { grid-template-columns: repeat(4, 1fr); } }
-
-        .grid-card { perspective: 1000px; height: 160px; cursor: pointer; position: relative; }
-        
-        .card-inner {
-            width: 100%; height: 100%;
-            background: linear-gradient(145deg, rgba(30, 10, 20, 0.8), rgba(15, 5, 10, 0.9));
-            border: 1px solid var(--border-glass); border-radius: 16px; padding: 20px;
-            display: flex; flex-direction: column; transform-style: preserve-3d;
-            transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.6); position: relative;
-        }
-
-        .grid-card:hover .card-inner {
-            transform: translateY(-5px) rotateX(2deg) rotateY(-2deg);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 0, 60, 0.2);
-            border-color: var(--border-glow);
-        }
-
-        /* ALWAYS VISIBLE TOP-RIGHT ACTIONS */
-        .card-actions {
-            position: absolute; top: 12px; right: 12px;
-            display: flex; gap: 6px; opacity: 1; z-index: 5;
-            transform: translateZ(40px); /* Keep them floated in 3D */
-        }
-        
-        .card-actions .btn-icon { padding: 6px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); }
-        .card-actions .btn-icon svg { width: 16px; height: 16px; }
-
-        .card-content {
-            flex-grow: 1; display: flex; align-items: center; justify-content: center;
-            text-align: center; transform: translateZ(30px);
-            padding-top: 25px; /* Push content down so actions don't overlap */
-        }
-        
-        .cat-card .card-content h3 { font-size: 1.1rem; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-
-        .note-card { height: auto; min-height: 180px; }
-        .note-card .card-content { align-items: flex-start; justify-content: flex-start; text-align: left; }
-        .note-card .card-content p {
-            font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; color: #d0d6e0;
-            word-break: break-word; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
-        }
-
-        /* TRASH STYLING */
-        .trash-divider {
-            grid-column: 1 / -1; margin-top: 40px; margin-bottom: 20px;
-            border-top: 1px dashed rgba(255, 0, 60, 0.4); text-align: center; position: relative;
-        }
-        .trash-divider span {
-            background: var(--bg-base); padding: 0 15px; color: var(--text-muted);
-            font-size: 0.85rem; letter-spacing: 2px; position: relative; top: -10px;
-            text-transform: uppercase;
-        }
-        .trashed-card .card-inner {
-            background: rgba(10, 10, 10, 0.5); border-style: dashed; border-color: rgba(255, 255, 255, 0.1);
-            opacity: 0.7; filter: grayscale(80%);
-        }
-        .trashed-card:hover .card-inner { opacity: 1; filter: grayscale(0%); border-color: var(--neon-red); }
-
-        /* FULL NOTE VIEW */
-        #full-note-view .full-note-content {
-            padding: 40px; min-height: 50vh; font-size: 1.1rem; line-height: 1.8;
-            color: #fff; white-space: pre-wrap; word-wrap: break-word;
-            border-top: 3px solid var(--neon-blue);
-        }
-
-        /* EMPTY STATES */
-        .empty-state {
-            grid-column: 1 / -1; text-align: center; padding: 60px 20px;
-            color: var(--text-muted); display: flex; flex-direction: column; align-items: center;
-        }
-        .empty-icon { font-size: 3rem; margin-bottom: 15px; opacity: 0.5; color: var(--neon-red); }
-
-        /* CUSTOM MODAL */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
-            display: flex; align-items: center; justify-content: center; z-index: 1000;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
-        }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-card {
-            width: 100%; max-width: 500px; padding: 30px; border-color: var(--neon-blue);
-            transform: translateY(30px) scale(0.95); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .modal-overlay.active .modal-card { transform: translateY(0) scale(1); }
-        .modal-header { margin-bottom: 20px; font-size: 1.25rem; color: var(--neon-blue); text-shadow: 0 0 10px rgba(0,229,255,0.5); }
-        .modal-body { margin-bottom: 25px; }
-        .modal-body textarea { min-height: 150px; resize: vertical; }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 15px; }
-        .btn-text { background: transparent; color: var(--text-muted); font-weight: 500; padding: 10px 20px; }
-        .btn-text:hover { color: #fff; text-shadow: 0 0 5px #fff; }
-
-        svg { width: 18px; height: 18px; fill: currentColor; }
-    </style>
-</head>
-<body>
-
-    <!-- 1. LOGIN SCREEN -->
-    <div id="login-view" class="view-section">
-        <div class="glass-panel login-box">
-            <div class="vault-logo">
-                <svg viewBox="0 0 24 24" style="width: 56px; height: 56px; fill: var(--neon-red); filter: drop-shadow(0 0 10px rgba(255,0,60,0.8));"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
-            </div>
-            <h1 class="login-title neon-text-red">EVIL VAULT</h1>
-            <p class="login-subtitle">RESTRICTED ACCESS</p>
-            
-            <div id="login-status" class="login-status"></div>
-            
-            <div class="pass-input-container">
-                <input type="password" id="pass-input" placeholder="••••" maxlength="4" autocomplete="off">
-            </div>
-            <button id="btn-unlock" class="btn-primary">DECRYPT SYSTEM</button>
-        </div>
-    </div>
-
-    <!-- MAIN APP CONTAINER -->
-    <div id="app-container" class="hidden">
-        
-        <!-- 2. CATEGORIES GRID VIEW -->
-        <div id="categories-view" class="view-section">
-            <header class="glass-panel dash-header">
-                <div class="header-left">
-                    <svg viewBox="0 0 24 24" style="width:28px;height:28px;color:var(--neon-red); filter: drop-shadow(0 0 5px var(--neon-red));"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
-                    <h2 class="header-title neon-text-red">COLLECTIONS</h2>
-                </div>
-                <button id="btn-add-cat" class="btn-primary">+ NEW</button>
-            </header>
-            
-            <!-- Active Categories -->
-            <div id="categories-grid" class="dashboard-grid"></div>
-
-            <!-- Trashed Categories -->
-            <div id="trash-divider-cats" class="trash-divider hidden"><span>🗑️ Recycled Collections</span></div>
-            <div id="trashed-categories-grid" class="dashboard-grid"></div>
-        </div>
-
-        <!-- 3. NOTES GRID VIEW -->
-        <div id="notes-view" class="view-section hidden">
-            <header class="glass-panel dash-header">
-                <div class="header-left">
-                    <button id="btn-back-to-cats" class="btn-icon" title="Return">
-                        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-                    </button>
-                    <h2 id="active-cat-title" class="header-title neon-text-blue" style="text-shadow: 0 0 10px var(--neon-blue);">Category Name</h2>
-                </div>
-                <button id="btn-add-note" class="btn-primary" style="border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0,229,255,0.2);">+ ADD INTEL</button>
-            </header>
-            
-            <div class="search-container">
-                <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                <input type="text" id="search-input" placeholder="Search operational intelligence..." autocomplete="off">
-            </div>
-
-            <!-- Active Notes -->
-            <div id="notes-grid" class="dashboard-grid"></div>
-
-            <!-- Trashed Notes -->
-            <div id="trash-divider-notes" class="trash-divider hidden"><span>🗑️ Recycled Intel</span></div>
-            <div id="trashed-notes-grid" class="dashboard-grid"></div>
-        </div>
-
-        <!-- 4. FULL NOTE VIEW -->
-        <div id="full-note-view" class="view-section hidden">
-            <header class="glass-panel dash-header" style="border-bottom-color: var(--neon-blue);">
-                <div class="header-left">
-                    <button id="btn-back-to-notes" class="btn-icon" title="Return to Grid">
-                        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-                    </button>
-                    <h2 class="header-title neon-text-blue">INTEL DETAILS</h2>
-                </div>
-                <button id="btn-copy-full" class="btn-primary" style="border-color: var(--neon-blue);">COPY INTEL</button>
-            </header>
-            <div class="glass-panel full-note-content selectable">
-                <div id="full-note-text"></div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- 5. UNIVERSAL MODAL -->
-    <div id="app-modal" class="modal-overlay">
-        <div class="glass-panel modal-card">
-            <h3 id="modal-title" class="modal-header">Title</h3>
-            <div class="modal-body">
-                <input type="text" id="modal-input-text" class="hidden" placeholder="Enter name...">
-                <textarea id="modal-input-area" class="hidden" placeholder="Enter details..."></textarea>
-            </div>
-            <div class="modal-footer">
-                <button id="modal-btn-cancel" class="btn-text">CANCEL</button>
-                <button id="modal-btn-save" class="btn-primary" style="border-color: var(--neon-blue);">SAVE</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ==========================================================================
-         JAVASCRIPT LOGIC
-         ========================================================================== -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, query, where, onSnapshot } 
-        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-        // FIREBASE CONFIGURATION (Unchanged as requested)
-        const firebaseConfig = {
-            apiKey: "AIzaSyCJfw-FOR3um5CdFbYXh4m5niMLMDpu1tU",
-            authDomain: "evil-vault.firebaseapp.com",
-            projectId: "evil-vault",
-            storageBucket: "evil-vault.firebasestorage.app",
-            messagingSenderId: "765657171943",
-            appId: "1:765657171943:web:830baffa2431525c999f42"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // STATE MANAGEMENT
-        const AppState = {
-            activeCategoryId: null,
-            activeCategoryName: null,
-            activeFullNoteText: "",
-            loginAttempts: 0,
-            lockoutKey: 'evil_vault_lockout',
-            unsubs: { categories: null, notes: null }
-        };
-
-        const DOM = {
-            views: {
-                login: document.getElementById('login-view'),
-                app: document.getElementById('app-container'),
-                categories: document.getElementById('categories-view'),
-                notes: document.getElementById('notes-view'),
-                fullNote: document.getElementById('full-note-view')
-            },
-            grids: {
-                cats: document.getElementById('categories-grid'),
-                catsTrash: document.getElementById('trashed-categories-grid'),
-                notes: document.getElementById('notes-grid'),
-                notesTrash: document.getElementById('trashed-notes-grid')
-            },
-            dividers: {
-                cats: document.getElementById('trash-divider-cats'),
-                notes: document.getElementById('trash-divider-notes')
-            },
+            dividers: { cats: document.getElementById('trash-divider-cats'), notes: document.getElementById('trash-divider-notes') },
             search: document.getElementById('search-input'),
-            modal: {
-                overlay: document.getElementById('app-modal'), title: document.getElementById('modal-title'),
-                inputTxt: document.getElementById('modal-input-text'), inputArea: document.getElementById('modal-input-area'),
-                btnSave: document.getElementById('modal-btn-save'), btnCancel: document.getElementById('modal-btn-cancel')
-            }
+            modal: { overlay: document.getElementById('app-modal'), title: document.getElementById('modal-title'), inputTxt: document.getElementById('modal-input-text'), inputArea: document.getElementById('modal-input-area'), btnSave: document.getElementById('modal-btn-save'), btnCancel: document.getElementById('modal-btn-cancel') }
         };
 
-        // ICONS
         const icons = {
             edit: `<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`,
             trash: `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`,
@@ -694,177 +380,164 @@
             permDelete: `<svg viewBox="0 0 24 24"><path d="M15 16h4v2h-4zm0-8h7v2h-7zm0 4h6v2h-6zM3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3v10zM14 5h-3l-1-1H6L5 5H2v2h12z"/></svg>`
         };
 
-        // COPY FALLBACK FUNCTION (Vital for Mobile/iframes)
         function fallbackCopy(text, btnElement) {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.position = "fixed";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                const originalHtml = btnElement.innerHTML;
-                btnElement.innerHTML = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
-                setTimeout(() => btnElement.innerHTML = originalHtml, 2000);
-            } catch (err) {
-                console.error('Fallback Copy failed', err);
-            }
+            const textArea = document.createElement("textarea"); textArea.value = text; textArea.style.position = "fixed"; document.body.appendChild(textArea); textArea.focus(); textArea.select();
+            try { document.execCommand('copy'); const originalHtml = btnElement.innerHTML; btnElement.innerHTML = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`; setTimeout(() => btnElement.innerHTML = originalHtml, 2000); } catch (err) {}
             document.body.removeChild(textArea);
         }
 
-        // VIEW NAVIGATION
         const showView = (viewName) => {
-            Object.values(DOM.views).forEach(v => v.classList.add('hidden'));
-            if (viewName === 'login') DOM.views.login.classList.remove('hidden');
-            else {
-                DOM.views.app.classList.remove('hidden');
-                if (viewName === 'categories') DOM.views.categories.classList.remove('hidden');
-                if (viewName === 'notes') DOM.views.notes.classList.remove('hidden');
-                if (viewName === 'fullNote') DOM.views.fullNote.classList.remove('hidden');
+            [DOM.views.cats, DOM.views.notes, DOM.views.fullNote].forEach(v => v.classList.add('hidden'));
+            if (viewName === 'categories') DOM.views.cats.classList.remove('hidden');
+            if (viewName === 'notes') DOM.views.notes.classList.remove('hidden');
+            if (viewName === 'fullNote') DOM.views.fullNote.classList.remove('hidden');
+        };
+
+        // --- MILITARY AUTO-LOCK ---
+        let idleTimer;
+        const lockApp = () => {
+            if(!AppState.isLocked) {
+                AppState.isLocked = true;
+                DOM.views.login.classList.remove('hidden'); // Show Login OVER the app
+                DOM.views.app.classList.add('hidden'); // Hide app completely
+                document.getElementById('pass-input').value = "";
+                document.getElementById('login-status').innerText = "SESSION LOCKED FOR SECURITY";
             }
         };
 
-        // MODAL SYSTEM
-        let currentModalAction = null;
-        const openModal = (title, type, initialValue, onSave) => {
-            DOM.modal.title.innerText = title;
-            currentModalAction = onSave;
-            DOM.modal.inputTxt.classList.add('hidden');
-            DOM.modal.inputArea.classList.add('hidden');
-
-            if (type === 'text') {
-                DOM.modal.inputTxt.classList.remove('hidden');
-                DOM.modal.inputTxt.value = initialValue;
-                setTimeout(() => DOM.modal.inputTxt.focus(), 100);
-            } else {
-                DOM.modal.inputArea.classList.remove('hidden');
-                DOM.modal.inputArea.value = initialValue;
-                setTimeout(() => DOM.modal.inputArea.focus(), 100);
-            }
-            DOM.modal.overlay.classList.add('active');
+        const resetIdleTimer = () => {
+            if(AppState.isLocked) return;
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(lockApp, 3 * 60 * 1000); // 3 Minute Timeout
         };
 
-        const closeModal = () => { DOM.modal.overlay.classList.remove('active'); currentModalAction = null; };
-        DOM.modal.btnCancel.onclick = closeModal;
-        DOM.modal.btnSave.onclick = () => {
-            if (!currentModalAction) return;
-            const val = !DOM.modal.inputTxt.classList.contains('hidden') ? DOM.modal.inputTxt.value.trim() : DOM.modal.inputArea.value.trim();
-            if (val) { currentModalAction(val); closeModal(); }
-        };
+        // Listen for user activity
+        ['mousemove', 'keydown', 'touchstart'].forEach(evt => document.addEventListener(evt, resetIdleTimer));
+        
+        // Listen for App/Tab Switch
+        document.addEventListener('visibilitychange', () => { if(document.hidden) lockApp(); });
 
-        // AUTHENTICATION (Time HHMM)
-        const checkLockout = () => {
-            const lockUntil = localStorage.getItem(AppState.lockoutKey);
-            const btn = document.getElementById('btn-unlock');
-            const input = document.getElementById('pass-input');
-            const status = document.getElementById('login-status');
-            
-            if (lockUntil && Date.now() < parseInt(lockUntil)) {
-                const mins = Math.ceil((parseInt(lockUntil) - Date.now()) / 60000);
-                status.innerText = `SYSTEM LOCKED. RETRY IN ${mins} MIN(S).`;
-                btn.disabled = true; input.disabled = true;
-                return true;
-            } else if (lockUntil) {
-                localStorage.removeItem(AppState.lockoutKey); AppState.loginAttempts = 0;
-            }
-            status.innerText = ""; btn.disabled = false; input.disabled = false;
-            return false;
-        };
-
+        // --- AUTHENTICATION & DECOY LOGIC ---
         const handleLogin = () => {
-            if (checkLockout()) return;
+            const lockUntil = localStorage.getItem(AppState.lockoutKey);
+            if (lockUntil && Date.now() < parseInt(lockUntil)) return; // Still locked out globally
+            
             const pass = document.getElementById('pass-input').value;
             const now = new Date();
-            const correctPass = now.getHours().toString().padStart(2, '0') + now.getMinutes().toString().padStart(2, '0');
+            const HH = now.getHours().toString().padStart(2, '0');
+            const MM = now.getMinutes().toString().padStart(2, '0');
+            
+            const correctMaster = HH + MM;
+            const correctDecoy = MM + HH;
 
-            if (pass === correctPass) {
-                showView('categories'); loadCategories();
+            if (pass === correctMaster || pass === correctDecoy) {
+                AppState.isDecoy = (pass === correctDecoy && correctMaster !== correctDecoy);
+                AppState.isLocked = false;
+                
+                DOM.views.login.classList.add('hidden'); // Hide login
+                DOM.views.app.classList.remove('hidden'); // Reveal state-preserved app
+                 // Only load fresh categories if we were completely logged out (not just unlocking from sleep)
+                if(!AppState.unsubs.categories) {
+                    showView('categories'); 
+                    loadCategories();
+                }
+                resetIdleTimer();
             } else {
                 AppState.loginAttempts++;
                 document.getElementById('pass-input').value = "";
                 document.getElementById('login-status').innerText = `INVALID HEX. ATTEMPT ${AppState.loginAttempts}/3`;
                 if (AppState.loginAttempts >= 3) {
                     localStorage.setItem(AppState.lockoutKey, Date.now() + (30 * 60 * 1000));
-                    checkLockout();
                 }
             }
         };
-
         document.getElementById('btn-unlock').onclick = handleLogin;
-        setInterval(checkLockout, 60000); checkLockout();
 
-        // RENDER CATEGORIES
+        // --- JSON EXPORT & NON-DESTRUCTIVE IMPORT ---
+        document.getElementById('btn-export').onclick = async () => {
+            document.getElementById('btn-export').innerText = "⏳";
+            const catSnap = await getDocs(collection(db, COLL_CATS()));
+            const noteSnap = await getDocs(collection(db, COLL_NOTES()));
+            
+            const data = { categories: [], notes: [] };
+            catSnap.forEach(d => data.categories.push({ id: d.id, ...d.data() }));
+            noteSnap.forEach(d => data.notes.push({ id: d.id, ...d.data() }));
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `evil_vault_${AppState.isDecoy ? 'decoy_' : ''}backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            document.getElementById('btn-export').innerText = "⬇️";
+        };
+
+        document.getElementById('btn-import').onclick = () => document.getElementById('import-file-input').click();
+
+        document.getElementById('import-file-input').onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    if(!data.categories || !data.notes) throw new Error("Invalid format");
+                    
+                    document.getElementById('btn-import').innerText = "⏳";
+                    const oldToNewCatMap = {};
+
+                    // Step 1: Create categories securely and map old IDs to new generated IDs
+                    for (const cat of data.categories) {
+                        const newCatRef = await addDoc(collection(db, COLL_CATS()), { name: cat.name, trashed: cat.trashed || false });
+                        oldToNewCatMap[cat.id] = newCatRef.id;
+                    }
+                    
+                    // Step 2: Create notes, replacing the old category ID with the new merged ID
+                    for (const note of data.notes) {
+                        const newLinkedCatId = oldToNewCatMap[note.category] || note.category; // fallback
+                        await addDoc(collection(db, COLL_NOTES()), { text: note.text, category: newLinkedCatId, trashed: note.trashed || false });
+                    }
+                    
+                    alert("Import successful! Data safely merged without overwriting.");
+                } catch(err) {
+                    alert("Import failed. Invalid JSON backup file.");
+                } finally {
+                    document.getElementById('btn-import').innerText = "⬆️";
+                    e.target.value = ""; // Reset input
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        // --- DATA RENDERING (Uses Dynamic Routing) ---
         const renderCategories = (snapshot) => {
             DOM.grids.cats.innerHTML = ''; DOM.grids.catsTrash.innerHTML = '';
             let activeCount = 0, trashCount = 0;
-
             snapshot.forEach(docSnap => {
-                const data = docSnap.data();
-                const isTrashed = data.trashed === true;
+                const data = docSnap.data(); const isTrashed = data.trashed === true;
                 const card = document.createElement('div');
-                card.className = `grid-card cat-card ${isTrashed ? 'trashed-card' : ''}`;
-                card.dataset.id = docSnap.id; card.dataset.name = data.name;
-
-                let actionButtons = isTrashed ? `
-                    <button class="btn-icon action-restore-cat" title="Restore Collection">${icons.restore}</button>
-                    <button class="btn-icon danger action-perm-cat" title="Destroy Permanently">${icons.permDelete}</button>
-                ` : `
-                    <button class="btn-icon action-copy-cat" title="Copy Title">${icons.copy}</button>
-                    <button class="btn-icon action-edit-cat" title="Rename">${icons.edit}</button>
-                    <button class="btn-icon danger action-delete-cat" title="Move to Trash">${icons.trash}</button>
-                `;
-
-                card.innerHTML = `
-                    <div class="card-inner">
-                        <div class="card-actions">${actionButtons}</div>
-                        <div class="card-content"><h3>${escapeHTML(data.name)}</h3></div>
-                    </div>`;
-
-                if (isTrashed) { DOM.grids.catsTrash.appendChild(card); trashCount++; } 
-                else { DOM.grids.cats.appendChild(card); activeCount++; }
+                card.className = `grid-card cat-card ${isTrashed ? 'trashed-card' : ''}`; card.dataset.id = docSnap.id; card.dataset.name = data.name;
+                card.innerHTML = `<div class="card-inner"><div class="card-actions">${isTrashed ? `<button class="btn-icon action-restore-cat" title="Restore">${icons.restore}</button><button class="btn-icon danger action-perm-cat" title="Destroy">${icons.permDelete}</button>` : `<button class="btn-icon action-copy-cat" title="Copy">${icons.copy}</button><button class="btn-icon action-edit-cat" title="Rename">${icons.edit}</button><button class="btn-icon danger action-delete-cat" title="Trash">${icons.trash}</button>`}</div><div class="card-content"><h3>${escapeHTML(data.name)}</h3></div></div>`;
+                isTrashed ? (DOM.grids.catsTrash.appendChild(card), trashCount++) : (DOM.grids.cats.appendChild(card), activeCount++);
             });
-
             if (activeCount === 0) DOM.grids.cats.innerHTML = `<div class="empty-state"><div class="empty-icon">📁</div><h3>No Active Collections</h3></div>`;
             DOM.dividers.cats.classList.toggle('hidden', trashCount === 0);
         };
 
         const loadCategories = () => {
             if (AppState.unsubs.categories) AppState.unsubs.categories();
-            AppState.unsubs.categories = onSnapshot(collection(db, "categories"), renderCategories);
+            AppState.unsubs.categories = onSnapshot(collection(db, COLL_CATS()), renderCategories);
         };
 
-        // RENDER NOTES
         const renderNotes = (snapshot) => {
             DOM.grids.notes.innerHTML = ''; DOM.grids.notesTrash.innerHTML = '';
             let activeCount = 0, trashCount = 0;
-
             snapshot.forEach(docSnap => {
-                const data = docSnap.data();
-                const isTrashed = data.trashed === true;
+                const data = docSnap.data(); const isTrashed = data.trashed === true;
                 const card = document.createElement('div');
-                card.className = `grid-card note-card ${isTrashed ? 'trashed-card' : ''}`;
-                card.dataset.id = docSnap.id; card.dataset.text = data.text;
-
-                let actionButtons = isTrashed ? `
-                    <button class="btn-icon action-restore-note" title="Restore Intel">${icons.restore}</button>
-                    <button class="btn-icon danger action-perm-note" title="Destroy Permanently">${icons.permDelete}</button>
-                ` : `
-                    <button class="btn-icon action-copy-note" title="Copy Intel">${icons.copy}</button>
-                    <button class="btn-icon action-edit-note" title="Edit Intel">${icons.edit}</button>
-                    <button class="btn-icon danger action-delete-note" title="Move to Trash">${icons.trash}</button>
-                `;
-
-                card.innerHTML = `
-                    <div class="card-inner">
-                        <div class="card-actions">${actionButtons}</div>
-                        <div class="card-content"><p>${escapeHTML(data.text)}</p></div>
-                    </div>`;
-
-                if (isTrashed) { DOM.grids.notesTrash.appendChild(card); trashCount++; } 
-                else { DOM.grids.notes.appendChild(card); activeCount++; }
+                card.className = `grid-card note-card ${isTrashed ? 'trashed-card' : ''}`; card.dataset.id = docSnap.id; card.dataset.text = data.text;
+                card.innerHTML = `<div class="card-inner"><div class="card-actions">${isTrashed ? `<button class="btn-icon action-restore-note" title="Restore">${icons.restore}</button><button class="btn-icon danger action-perm-note" title="Destroy">${icons.permDelete}</button>` : `<button class="btn-icon action-copy-note" title="Copy">${icons.copy}</button><button class="btn-icon action-edit-note" title="Edit">${icons.edit}</button><button class="btn-icon danger action-delete-note" title="Trash">${icons.trash}</button>`}</div><div class="card-content"><p>${escapeHTML(data.text)}</p></div></div>`;
+                isTrashed ? (DOM.grids.notesTrash.appendChild(card), trashCount++) : (DOM.grids.notes.appendChild(card), activeCount++);
             });
-
             if (activeCount === 0) DOM.grids.notes.innerHTML = `<div class="empty-state"><div class="empty-icon">📄</div><h3>No Active Intel Found</h3></div>`;
             DOM.dividers.notes.classList.toggle('hidden', trashCount === 0);
         };
@@ -872,99 +545,77 @@
         const loadNotes = (categoryId) => {
             DOM.search.value = '';
             if (AppState.unsubs.notes) AppState.unsubs.notes();
-            const q = query(collection(db, "notes"), where("category", "==", categoryId));
+            const q = query(collection(db, COLL_NOTES()), where("category", "==", categoryId));
             AppState.unsubs.notes = onSnapshot(q, renderNotes);
         };
 
-        // MASTER EVENT DELEGATION
+        // --- MASTER EVENT DELEGATION ---
+        let currentModalAction = null;
+        const openModal = (title, type, val, onSave) => {
+            DOM.modal.title.innerText = title; currentModalAction = onSave;
+            DOM.modal.inputTxt.classList.add('hidden'); DOM.modal.inputArea.classList.add('hidden');
+            if (type === 'text') { DOM.modal.inputTxt.classList.remove('hidden'); DOM.modal.inputTxt.value = val; setTimeout(() => DOM.modal.inputTxt.focus(), 100); } 
+            else { DOM.modal.inputArea.classList.remove('hidden'); DOM.modal.inputArea.value = val; setTimeout(() => DOM.modal.inputArea.focus(), 100); }
+            DOM.modal.overlay.classList.add('active');
+        };
+        DOM.modal.btnCancel.onclick = () => { DOM.modal.overlay.classList.remove('active'); currentModalAction = null; };
+        DOM.modal.btnSave.onclick = () => {
+            const val = !DOM.modal.inputTxt.classList.contains('hidden') ? DOM.modal.inputTxt.value.trim() : DOM.modal.inputArea.value.trim();
+            if (val && currentModalAction) { currentModalAction(val); DOM.modal.overlay.classList.remove('active'); currentModalAction = null; }
+        };
+
         document.addEventListener('click', async (e) => {
+            if(AppState.isLocked && !e.target.closest('#login-view')) return; // Ignore clicks if locked
             
-            // GLOBAL ACTIONS
-            if (e.target.closest('#btn-add-cat')) {
-                openModal("INITIALIZE COLLECTION", "text", "", async (val) => { await addDoc(collection(db, "categories"), { name: val, trashed: false }); });
-                return;
-            }
-            if (e.target.closest('#btn-add-note')) {
-                openModal("ADD INTEL", "textarea", "", async (val) => { await addDoc(collection(db, "notes"), { text: val, category: AppState.activeCategoryId, trashed: false }); });
-                return;
-            }
-            if (e.target.closest('#btn-back-to-cats')) { showView('categories'); AppState.activeCategoryId = null; return; }
+            if (e.target.closest('#btn-add-cat')) { openModal("INITIALIZE COLLECTION", "text", "", async (val) => { await addDoc(collection(db, COLL_CATS()), { name: val, trashed: false }); }); return; }
+            if (e.target.closest('#btn-add-note')) { openModal("ADD INTEL", "textarea", "", async (val) => { await addDoc(collection(db, COLL_NOTES()), { text: val, category: AppState.activeCategoryId, trashed: false }); }); return; }
+            if (e.target.closest('#btn-back-to-cats')) { showView('categories'); return; }
             if (e.target.closest('#btn-back-to-notes')) { showView('notes'); return; }
             
-            // FULL NOTE COPY BUTTON
-            const copyFullBtn = e.target.closest('#btn-copy-full');
-            if(copyFullBtn) { fallbackCopy(AppState.activeFullNoteText, copyFullBtn); return; }
+            const copyFullBtn = e.target.closest('#btn-copy-full'); if(copyFullBtn) { fallbackCopy(AppState.activeFullNoteText, copyFullBtn); return; }
 
-            // CARD CLICKS
             const cardActionBtn = e.target.closest('.card-actions button');
             const catCard = e.target.closest('.cat-card');
             const noteCard = e.target.closest('.note-card');
 
-            // --- CATEGORY LOGIC ---
             if (catCard) {
                 const id = catCard.dataset.id; const name = catCard.dataset.name;
-                
                 if (cardActionBtn) {
                     if (cardActionBtn.classList.contains('action-copy-cat')) fallbackCopy(name, cardActionBtn);
-                    if (cardActionBtn.classList.contains('action-edit-cat')) {
-                        openModal("RENAME COLLECTION", "text", name, async (val) => { await updateDoc(doc(db, "categories", id), { name: val }); });
-                    }
-                    if (cardActionBtn.classList.contains('action-delete-cat')) await updateDoc(doc(db, "categories", id), { trashed: true });
-                    if (cardActionBtn.classList.contains('action-restore-cat')) await updateDoc(doc(db, "categories", id), { trashed: false });
-                    if (cardActionBtn.classList.contains('action-perm-cat')) {
-                        if(confirm(`Permanently destroy collection '${name}'?`)) await deleteDoc(doc(db, "categories", id));
-                    }
-                    return; // Stop if clicked a button
+                    if (cardActionBtn.classList.contains('action-edit-cat')) openModal("RENAME", "text", name, async (val) => await updateDoc(doc(db, COLL_CATS(), id), { name: val }));
+                    if (cardActionBtn.classList.contains('action-delete-cat')) await updateDoc(doc(db, COLL_CATS(), id), { trashed: true });
+                    if (cardActionBtn.classList.contains('action-restore-cat')) await updateDoc(doc(db, COLL_CATS(), id), { trashed: false });
+                    if (cardActionBtn.classList.contains('action-perm-cat') && confirm(`Permanently destroy collection?`)) await deleteDoc(doc(db, COLL_CATS(), id));
+                    return; 
                 }
-
-                // If clicked body of an active category -> Open Notes
                 if (!catCard.classList.contains('trashed-card')) {
-                    AppState.activeCategoryId = id; AppState.activeCategoryName = name;
-                    document.getElementById('active-cat-title').innerText = name;
+                    AppState.activeCategoryId = id; document.getElementById('active-cat-title').innerText = name;
                     showView('notes'); loadNotes(id);
                 }
-                return;
             }
 
-            // --- NOTE LOGIC ---
             if (noteCard) {
                 const id = noteCard.dataset.id; const text = noteCard.dataset.text;
-                
                 if (cardActionBtn) {
                     if (cardActionBtn.classList.contains('action-copy-note')) fallbackCopy(text, cardActionBtn);
-                    if (cardActionBtn.classList.contains('action-edit-note')) {
-                        openModal("UPDATE INTEL", "textarea", text, async (val) => { await updateDoc(doc(db, "notes", id), { text: val }); });
-                    }
-                    if (cardActionBtn.classList.contains('action-delete-note')) await updateDoc(doc(db, "notes", id), { trashed: true });
-                    if (cardActionBtn.classList.contains('action-restore-note')) await updateDoc(doc(db, "notes", id), { trashed: false });
-                    if (cardActionBtn.classList.contains('action-perm-note')) {
-                        if(confirm("Permanently destroy this intel?")) await deleteDoc(doc(db, "notes", id));
-                    }
-                    return; // Stop if clicked a button
+                    if (cardActionBtn.classList.contains('action-edit-note')) openModal("UPDATE INTEL", "textarea", text, async (val) => await updateDoc(doc(db, COLL_NOTES(), id), { text: val }));
+                    if (cardActionBtn.classList.contains('action-delete-note')) await updateDoc(doc(db, COLL_NOTES(), id), { trashed: true });
+                    if (cardActionBtn.classList.contains('action-restore-note')) await updateDoc(doc(db, COLL_NOTES(), id), { trashed: false });
+                    if (cardActionBtn.classList.contains('action-perm-note') && confirm("Permanently destroy intel?")) await deleteDoc(doc(db, COLL_NOTES(), id));
+                    return;
                 }
-
-                // If clicked body of an active note -> Full View
                 if (!noteCard.classList.contains('trashed-card')) {
-                    AppState.activeFullNoteText = text;
-                    document.getElementById('full-note-text').innerText = text;
-                    showView('fullNote');
+                    AppState.activeFullNoteText = text; document.getElementById('full-note-text').innerText = text; showView('fullNote');
                 }
             }
         });
 
-        // SEARCH
         DOM.search.addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
-            document.querySelectorAll('#notes-grid .note-card').forEach(card => {
-                const text = card.dataset.text.toLowerCase();
-                card.classList.toggle('hidden', !text.includes(term));
-            });
+            document.querySelectorAll('#notes-grid .note-card').forEach(card => card.classList.toggle('hidden', !card.dataset.text.toLowerCase().includes(term)));
         });
 
         function escapeHTML(str) { return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)); }
     </script>
 </body>
 </html>
-
-
-```
